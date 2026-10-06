@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shaxsiy Link Hub</title>
+
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome ikonkalari (CDN) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* ====== UMUMIY SOZLAMALAR ====== */
+  /* Jonli (lively) fon uchun rang to'plami — bu yerdagi hex kodlarni o'zgartirsangiz, fon rangi butunlay o'zgaradi */
+  :root{
+    --bg-grad-1:#7c3aed; /* to'q binafsha */
+    --bg-grad-2:#db2777; /* to'q pushti */
+    --bg-grad-3:#0284c7; /* to'q moviy */
+    --bg-grad-4:#ea580c; /* to'q sariq-qizil */
+  }
+  html.dark{
+    --bg-grad-1:#3b0764;
+    --bg-grad-2:#701a3f;
+    --bg-grad-3:#082f49;
+    --bg-grad-4:#6c2409;
+  }
+
+  * { font-family: 'Manrope', sans-serif; }
+
+  body{
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    transition: background 0.6s ease;
+    background: linear-gradient(120deg, var(--bg-grad-1), var(--bg-grad-2), var(--bg-grad-3), var(--bg-grad-4));
+    background-size: 300% 300%;
+    animation: gradientMove 14s ease infinite;
+  }
+
+  @keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+
+  /* Fon ustida suzib yuruvchi rangli "blob" doiralar — jonlilik uchun */
+  .bg-blob{
+    position:fixed;
+    border-radius:9999px;
+    filter: blur(70px);
+    opacity:0.55;
+    z-index:0;
+    pointer-events:none;
+  }
+  .blob-1{
+    width:320px; height:320px;
+    top:-60px; left:-80px;
+    background:#f59e0b;
+    animation: floatBlob1 16s ease-in-out infinite;
+  }
+  .blob-2{
+    width:280px; height:280px;
+    bottom:-60px; right:-70px;
+    background:#ec4899;
+    animation: floatBlob2 18s ease-in-out infinite;
+  }
+  .blob-3{
+    width:250px; height:250px;
+    top:40%; right:-90px;
+    background:#0ea5e9;
+    animation: floatBlob3 20s ease-in-out infinite;
+  }
+
+  @keyframes floatBlob1{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(40px,50px) scale(1.15); }
+  }
+  @keyframes floatBlob2{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(-30px,-40px) scale(1.1); }
+  }
+  @keyframes floatBlob3{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(-25px,30px) scale(1.2); }
+  }
+
+  /* Shisha effekti (Glassmorphism) */
+  .glass{
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.4);
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  html.dark .glass{
+    background: rgba(30,27,60,0.45);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Havola tugmalari uchun bosilish/hover animatsiyasi */
+  .link-btn{
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.3s ease;
+  }
+  .link-btn:hover{
+    transform: translateY(-3px) scale(1.015);
+    box-shadow: 0 10px 25px -8px rgba(99,102,241,0.35);
+  }
+  .link-btn:active{
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Ijtimoiy tarmoq doira ikonkalari */
+  .social-icon{
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .social-icon:hover{
+    transform: translateY(-4px) rotate(-4deg);
+    box-shadow: 0 8px 18px -6px rgba(99,102,241,0.45);
+  }
+
+  /* Avatar atrofidagi yumshoq porlash */
+  .avatar-glow{
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.6), 0 0 35px rgba(129,140,248,0.45);
+  }
+  html.dark .avatar-glow{
+    box-shadow: 0 0 0 4px rgba(30,27,60,0.7), 0 0 35px rgba(129,140,248,0.35);
+  }
+
+  /* Dark/Light almashtirish tugmasi ichidagi ikonka aylanishi */
+  .toggle-icon{
+    transition: transform 0.5s ease, opacity 0.3s ease;
+  }
+
+  /* "Copy Link" bosilganda chiqadigan mini-xabar (toast) */
+  #toast{
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Sahifa yuklanganda paydo bo'lish animatsiyasi */
+  .fade-in-up{
+    opacity:0;
+    transform: translateY(14px);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  @keyframes fadeInUp{
+    to{ opacity:1; transform: translateY(0); }
+  }
+</style>
+</head>
+
+<body class="text-slate-800 dark:text-slate-100">
+
+<!-- ====== FONDAGI JONLI "BLOB" DOIRALAR (dekorativ, matn bilan aralashmaydi) ====== -->
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
+<div class="bg-blob blob-3"></div>
+
+<!-- ====== DARK / LIGHT MODE TUGMASI ====== -->
+<button id="themeToggle"
+  class="fixed top-4 right-4 z-50 w-11 h-11 rounded-full glass flex items-center justify-center shadow-lg"
+  aria-label="Rejimni almashtirish">
+  <i id="themeIcon" class="fa-solid fa-moon toggle-icon text-indigo-500"></i>
+</button>
+
+<div class="relative z-10 min-h-screen flex items-center justify-center px-4 py-14">
+  <div class="w-full max-w-md mx-auto">
+
+    <!-- ====== PROFIL BO'LIMI ====== -->
+    <!-- Diqqat: avatar rasmini o'zgartirish uchun quyidagi src="" manzilini o'z rasm havolangizga almashtiring -->
+    <div class="fade-in-up flex flex-col items-center text-center mb-8" style="animation-delay:0.05s">
+      <img
+        src="data:image/png;base64,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"
+        alt="Profil rasmi"
+        class="w-24 h-24 rounded-full object-cover avatar-glow mb-4">
+
+      <!-- Ism-familiya va verifikatsiya belgisi -->
+      <div class="flex items-center gap-1.5">
+        <h1 class="text-xl font-extrabold">Umar Suxbatillayev</h1>
+        <i class="fa-solid fa-circle-check text-blue-500" title="Tasdiqlangan profil"></i>
+      </div>
+
+      <!-- Qisqa Bio matni -->
+      <p class="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-xs">
+        Frontend dasturchi ✦ Dizayn va texnologiya ishqibozi ✦ Toshkent, O'zbekiston
+      </p>
+    </div>
+
+    <!-- ====== HAVOLALAR RO'YXATI ====== -->
+    <!-- Har bir tugmani nusxalab, href, ikonka va matnni o'zgartirib yangi havola qo'shishingiz mumkin -->
+    <div class="flex flex-col gap-3.5">
+
+      <a href="#" target="_blank" rel="noopener"
+         class="link-btn glass rounded-2xl px-5 py-4 flex items-center gap-4 shadow-md">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center">
+          <i class="fa-solid fa-briefcase text-indigo-500"></i>
+        </div>
+        <span class="flex-1 font-semibold text-sm sm:text-base">Mening Portfoliom</span>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+      </a>
+
+      <a href="https://t.me/umarr7l2" target="_blank" rel="noopener"
+         class="link-btn glass rounded-2xl px-5 py-4 flex items-center gap-4 shadow-md">
+        <div class="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center">
+          <i class="fa-brands fa-telegram text-sky-500"></i>
+        </div>
+        <span class="flex-1 font-semibold text-sm sm:text-base">Telegram Kanalim</span>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+      </a>
+
+      <a href="https://www.instagram.com/umarr7l2/" target="_blank" rel="noopener"
+         class="link-btn glass rounded-2xl px-5 py-4 flex items-center gap-4 shadow-md">
+        <div class="w-10 h-10 rounded-xl bg-pink-500/15 flex items-center justify-center">
+          <i class="fa-brands fa-instagram text-pink-500"></i>
+        </div>
+        <span class="flex-1 font-semibold text-sm sm:text-base">Instagram</span>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+      </a>
+
+      <a href="#" target="_blank" rel="noopener"
+         class="link-btn glass rounded-2xl px-5 py-4 flex items-center gap-4 shadow-md">
+        <div class="w-10 h-10 rounded-xl bg-slate-500/15 flex items-center justify-center">
+          <i class="fa-brands fa-github text-slate-600 dark:text-slate-200"></i>
+        </div>
+        <span class="flex-1 font-semibold text-sm sm:text-base">GitHub</span>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+      </a>
+
+      <a href="tel:+998947664488"
+         class="link-btn glass rounded-2xl px-5 py-4 flex items-center gap-4 shadow-md">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+          <i class="fa-solid fa-phone text-emerald-500"></i>
+        </div>
+        <span class="flex-1 font-semibold text-sm sm:text-base">Bog'lanish</span>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+      </a>
+
+    </div>
+
+    <!-- ====== SOCIAL BAR (kichik ikonkalar + Copy Link) ====== -->
+    <div class="mt-9 flex flex-col items-center gap-5">
+
+      <div class="flex items-center gap-4">
+        <a href="#" target="_blank" rel="noopener" aria-label="Facebook"
+           class="social-icon w-10 h-10 rounded-full glass shadow flex items-center justify-center">
+          <i class="fa-brands fa-facebook-f text-blue-600"></i>
+        </a>
+        <a href="#" target="_blank" rel="noopener" aria-label="Twitter / X"
+           class="social-icon w-10 h-10 rounded-full glass shadow flex items-center justify-center">
+          <i class="fa-brands fa-x-twitter"></i>
+        </a>
+        <a href="#" target="_blank" rel="noopener" aria-label="LinkedIn"
+           class="social-icon w-10 h-10 rounded-full glass shadow flex items-center justify-center">
+          <i class="fa-brands fa-linkedin-in text-blue-700"></i>
+        </a>
+        <a href="#" target="_blank" rel="noopener" aria-label="YouTube"
+           class="social-icon w-10 h-10 rounded-full glass shadow flex items-center justify-center">
+          <i class="fa-brands fa-youtube text-red-500"></i>
+        </a>
+      </div>
+
+      <!-- Profil havolasini nusxalash tugmasi -->
+      <button id="copyLinkBtn"
+        class="link-btn glass rounded-full px-5 py-2.5 text-xs font-semibold flex items-center gap-2 shadow-md">
+        <i class="fa-regular fa-copy"></i>
+        <span>Havolani nusxalash</span>
+      </button>
+
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">© 2026 Umar Suxbatillayev. Barcha huquqlar himoyalangan.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ====== NUSXALASH TOASTI (bildirishnoma) ====== -->
+<div id="toast"
+  class="fixed bottom-6 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none
+         glass px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg z-50 flex items-center gap-2">
+  <i class="fa-solid fa-check text-emerald-500"></i>
+  <span>Havola nusxalandi!</span>
+</div>
+
+<script>
+  // ====== DARK / LIGHT MODE MANTIQI ======
+  const htmlEl = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+
+  // Foydalanuvchi tanlovini eslab qolish (localStorage)
+  function applyTheme(theme){
+    if(theme === 'dark'){
+      htmlEl.classList.add('dark');
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      htmlEl.classList.remove('dark');
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
+    }
+  }
+
+  // Avval saqlangan sozlamani yoki tizim sozlamasini tekshirish
+  const savedTheme = localStorage.getItem('linkhub-theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = htmlEl.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('linkhub-theme', newTheme);
+
+    // Tugma bosilganda kichik aylanish animatsiyasi
+    themeIcon.style.transform = 'rotate(360deg)';
+    setTimeout(() => { themeIcon.style.transform = 'rotate(0deg)'; }, 500);
+  });
+
+  // ====== "COPY LINK" TUGMASI MANTIQI ======
+  const copyLinkBtn = document.getElementById('copyLinkBtn');
+  const toast = document.getElementById('toast');
+
+  copyLinkBtn.addEventListener('click', () => {
+    // Joriy sahifa havolasini nusxalaydi (o'zgartirmasa ham bo'ladi)
+    const linkToCopy = window.location.href;
+
+    navigator.clipboard.writeText(linkToCopy).then(() => {
+      showToast();
+    }).catch(() => {
+      // Agar clipboard API ishlamasa (masalan eski brauzer), zaxira usul
+      const tempInput = document.createElement('input');
+      tempInput.value = linkToCopy;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast();
+    });
+  });
+
+  function showToast(){
+    toast.style.opacity = '1';
+    toast.style.transform = 'translate(-50%, -8px)';
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%, 0)';
+    }, 1800);
+  }
+</script>
+
+</body>
+</html>
